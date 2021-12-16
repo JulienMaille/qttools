@@ -55,6 +55,7 @@ struct AppearanceOptions {
 
     UIMode uiMode{DockedMode};
     ToolWindowFontSettings toolWindowFontSettings;
+    QString themeSearchPaths, themeName;
 };
 
 inline bool operator==(const AppearanceOptions &ao1, const AppearanceOptions &ao2)

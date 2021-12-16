@@ -35,25 +35,33 @@
 #include <QtDesigner/abstractformeditor.h>
 #include <QtCore/qtimer.h>
 #include <QtCore/qdebug.h>
+#include <QFileDialog>
 
 QT_BEGIN_NAMESPACE
 
 // ---------------- AppearanceOptions
 bool AppearanceOptions::equals(const AppearanceOptions &rhs) const
 {
-    return uiMode == rhs.uiMode && toolWindowFontSettings == rhs.toolWindowFontSettings;
+    return uiMode == rhs.uiMode && toolWindowFontSettings == rhs.toolWindowFontSettings
+           && themeSearchPaths == rhs.themeSearchPaths && themeName == rhs.themeName;
 }
 
 void AppearanceOptions::toSettings(QDesignerSettings &settings) const
 {
     settings.setUiMode(uiMode);
     settings.setToolWindowFont(toolWindowFontSettings);
+
+    settings.setValue("ThemeSearchPaths", themeSearchPaths);
+    settings.setValue("ThemeName", themeName);
 }
 
 void AppearanceOptions::fromSettings(const QDesignerSettings &settings)
 {
     uiMode = settings.uiMode();
     toolWindowFontSettings = settings.toolWindowFont();
+
+    themeSearchPaths = settings.value("ThemeSearchPaths", ":\\icons").toString();
+    themeName = settings.value("ThemeName", "light").toString();
 }
 
 // ---------------- QDesignerAppearanceOptionsWidget
@@ -71,6 +79,11 @@ QDesignerAppearanceOptionsWidget::QDesignerAppearanceOptionsWidget(QWidget *pare
     m_ui->m_fontPanel->setCheckable(true);
     m_ui->m_fontPanel->setTitle(tr("Toolwindow Font"));
 
+    connect(m_ui->m_themeSearchPathToolButton, &QToolButton::clicked, [this](){
+        QString dir = QFileDialog::getExistingDirectory(this, tr("Theme packs search directory"),
+             ".", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+        m_ui->m_themeSearchPathLineEdit->setText(dir);
+    });
 }
 
 QDesignerAppearanceOptionsWidget::~QDesignerAppearanceOptionsWidget()
@@ -90,6 +103,9 @@ AppearanceOptions QDesignerAppearanceOptionsWidget::appearanceOptions() const
     rc.toolWindowFontSettings.m_font = m_ui->m_fontPanel->selectedFont();
     rc.toolWindowFontSettings.m_useFont = m_ui->m_fontPanel->isChecked();
     rc.toolWindowFontSettings.m_writingSystem = m_ui->m_fontPanel->writingSystem();
+
+    rc.themeSearchPaths = m_ui->m_themeSearchPathLineEdit->text();
+    rc.themeName = m_ui->m_themeNameLineEdit->text();
     return rc;
 }
 
@@ -100,6 +116,9 @@ void QDesignerAppearanceOptionsWidget::setAppearanceOptions(const AppearanceOpti
     m_ui->m_fontPanel->setWritingSystem(ao.toolWindowFontSettings.m_writingSystem);
     m_ui->m_fontPanel->setSelectedFont(ao.toolWindowFontSettings.m_font);
     m_ui->m_fontPanel->setChecked(ao.toolWindowFontSettings.m_useFont);
+
+    m_ui->m_themeSearchPathLineEdit->setText(ao.themeSearchPaths);
+    m_ui->m_themeNameLineEdit->setText(ao.themeName);
 }
 
 void QDesignerAppearanceOptionsWidget::slotUiModeComboChanged()

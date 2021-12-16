@@ -1074,6 +1074,10 @@ void QDesignerWorkbench::restoreUISettings()
         default: Q_ASSERT(0);
     }
 
+    // Icon themes setup
+    QIcon::setThemeSearchPaths(QStringList() << QDesignerSettings(m_core).value("ThemeSearchPaths", ":\\icons").toString());
+    QIcon::setThemeName(QDesignerSettings(m_core).value("ThemeName", "light").toString());
+
     ToolWindowFontSettings fontSettings = QDesignerSettings(m_core).toolWindowFont();
     const QFont &font = fontSettings.m_useFont ? fontSettings.m_font : qApp->font();
 
